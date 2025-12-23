@@ -87,7 +87,7 @@ public class MessageSender {
     }
 
     //отправка сообщения о том, что противник отключился
-    public  static void sendOpponentDisconnect(Player remainingPlayer, Player disconnectPlayer){
+    public static void sendOpponentDisconnect(Player remainingPlayer, Player disconnectPlayer){
         try{
             GameEndDueDisconnectMessage gameEndDueDisconnectMessage = new GameEndDueDisconnectMessage(disconnectPlayer.getName());
             String json = JsonUtils.toJson(gameEndDueDisconnectMessage);
@@ -96,6 +96,23 @@ public class MessageSender {
             System.err.println("не удалось обработать сообщение об отключении противника");
             e.printStackTrace();
         }
+    }
+
+    //отправка сообщения о ничьей (в случае, если кончились карты, но при этом равное hp)
+    public static void sendDraw(Player player1, Player player2) throws Exception {
+        try{
+            GameEndDrawMessage gameEndDrawMessage1 = new GameEndDrawMessage(player1.getName(), player2.getName());
+            String json1 = JsonUtils.toJson(gameEndDrawMessage1);
+            player1.getClientHandler().sendMessage(json1);
+
+            GameEndDrawMessage gameEndDrawMessage2 = new GameEndDrawMessage(player1.getName(), player2.getName());
+            String json2 = JsonUtils.toJson(gameEndDrawMessage2);
+            player2.getClientHandler().sendMessage(json2);
+        }catch (Exception e){
+            System.err.println();
+            e.printStackTrace();
+        }
+
     }
 
 

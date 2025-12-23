@@ -137,12 +137,16 @@ public class GameSession {
             }
             //проверка наличия карт (читай проверка, сыграно ли 8 раундов и все карты)
             else if(!player1.getWizard().deckIsNotEmpty() || !player2.getWizard().deckIsNotEmpty()){
-                if(!player1.getWizard().deckIsNotEmpty()){
-                    MessageSender.sendGameEnd(player1, player2, player2.getName(), "GAME_OVER_REASON_NO_MORE_CARD");
+                if(player1.getWizard().getHp() > player2.getWizard().getHp()){
+                    MessageSender.sendGameEnd(player1, player2, player1.getName(), "GAME_OVER_REASON_NO_MORE_CARDS");
                     gameManager.endGameSession(this);
                 }
-                else {
-                    MessageSender.sendGameEnd(player1, player2, player1.getName(), "GAME_OVER_REASON_NO_MORE_CARD");
+                else if(player1.getWizard().getHp() < player2.getWizard().getHp()){
+                    MessageSender.sendGameEnd(player1, player2, player2.getName(), "GAME_OVER_REASON_NO_MORE_CARDS");
+                    gameManager.endGameSession(this);
+                }
+                else{
+                    MessageSender.sendDraw(player1, player2);
                     gameManager.endGameSession(this);
                 }
             }
