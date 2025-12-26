@@ -7,11 +7,10 @@ import common.models.messages.GameMessage;
  * Используется для всех типов окончания:
  * - смерть мага
  * - закончились карты
- * - отключение противника
  */
 public class GameEndMessage extends GameMessage {
     private String winnerName;
-    private String reason; // "death", "cards", "disconnect"
+    private String reason; // "death", "cards"
     private int yourFinalHP;
     private int opponentFinalHP;
 
