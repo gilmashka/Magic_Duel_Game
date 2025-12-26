@@ -51,7 +51,9 @@ public class GameServer {
     public static void main(String[] args) throws IOException {
         ServerSocket serverSocket = new ServerSocket(1234);
         GameServer gameServer = new GameServer(serverSocket);
+        System.out.println("Сервер запущен");//***логирование***
         gameServer.start();
+
     }
 
 }
