@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="client.gui.controllers.GameController"
+      alignment="CENTER"
+      spacing="20"
+      style="-fx-background-color: #121212;">
+
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <VBox alignment="CENTER" spacing="10">
+        <Label fx:id="opponentNameLabel" text="Противник"
+               style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+
+        <StackPane> <HBox alignment="CENTER" spacing="10">
+            <ProgressBar fx:id="opponentHpBar" progress="1.0" prefWidth="400" prefHeight="25"
+                         style="-fx-accent: #cf6679;"/>
+            <Label fx:id="opponentHpText" text="30 / 30" style="-fx-text-fill: #cf6679; -fx-font-size: 18px;"/>
+        </HBox>
+            <Label fx:id="opponentDamageText" text="" opacity="0"
+                   style="-fx-text-fill: #ff1744; -fx-font-size: 22px; -fx-font-weight: bold;"/>
+        </StackPane>
+    </VBox>
+
+    <Separator opacity="0.1" prefWidth="800"/>
+
+    <StackPane VBox.vgrow="ALWAYS">
+        <HBox fx:id="battleField" alignment="CENTER" spacing="100"
+              style="-fx-border-color: #333333; -fx-border-width: 2; -fx-border-radius: 15; -fx-border-style: dashed;">
+            <children>
+                <StackPane fx:id="opponentSlot" prefWidth="150" prefHeight="220"
+                           style="-fx-border-color: #444; -fx-border-radius: 10; -fx-background-color: rgba(255,255,255,0.02);"/>
+
+                <StackPane fx:id="playerSlot" prefWidth="150" prefHeight="220"
+                           onDragOver="#handleDragOver" onDragDropped="#handleDragDropped"
+                           style="-fx-border-color: #03DAC5; -fx-border-radius: 10; -fx-background-color: rgba(3,218,197,0.05);">
+                    <Label text="ТАЩИ СЮДА" style="-fx-text-fill: #03DAC5; -fx-opacity: 0.5;"/>
+                </StackPane>
+            </children>
+        </HBox>
+    </StackPane>
+
+    <Separator opacity="0.1" prefWidth="800"/>
+
+    <VBox alignment="CENTER" spacing="10">
+        <StackPane> <HBox alignment="CENTER" spacing="10">
+            <ProgressBar fx:id="playerHpBar" progress="1.0" prefWidth="400" prefHeight="25"
+                         style="-fx-accent: #03DAC5;"/>
+            <Label fx:id="playerHpText" text="30 / 30" style="-fx-text-fill: #03DAC5; -fx-font-size: 18px;"/>
+        </HBox>
+            <Label fx:id="playerDamageText" text="" opacity="0"
+                   style="-fx-text-fill: #ff1744; -fx-font-size: 22px; -fx-font-weight: bold;"/>
+        </StackPane>
+
+        <Label fx:id="playerNameLabel" text="ВЫ"
+               style="-fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold;"/>
+    </VBox>
+
+    <ScrollPane fitToHeight="true" vbarPolicy="NEVER" hbarPolicy="AS_NEEDED"
+                style="-fx-background: transparent; -fx-background-color: transparent; border-color: transparent;">
+        <HBox fx:id="cardsContainer" alignment="CENTER" spacing="15" style="-fx-padding: 10;">
+        </HBox>
+    </ScrollPane>
+
+</VBox>

@@ -51,8 +51,8 @@ public class GameManager {
     Вспомогательные методы
      */
     //метод матчмейкинга
-    private void tryToCreateNewGameSession(){
-        if(waitingPlayers.size() == 2){
+    private synchronized void tryToCreateNewGameSession(){
+        if(waitingPlayers.size() >= 2){
             List<Player> pair = new ArrayList<>();
             pair.add(waitingPlayers.poll());
             pair.add(waitingPlayers.poll());
@@ -71,9 +71,9 @@ public class GameManager {
         if (player == null){
             return;
         }
-        if(waitingPlayers.contains(player)){
+        if(waitingPlayers.contains(player)){ // Игрок ещё не в игре - просто удаляем из очереди
             waitingPlayers.remove(player);
-        } else if (currentGameList.containsKey(player)) {
+        } else if (currentGameList.containsKey(player)) { // Игрок в игре - его соперник побеждает по техническим причинам
             GameSession gameSession = currentGameList.get(player);
             Player player1 = gameSession.getPlayer1();
             Player player2 = gameSession.getPlayer2();

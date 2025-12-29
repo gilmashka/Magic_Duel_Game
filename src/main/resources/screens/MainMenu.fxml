@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+
+<?import javafx.scene.layout.StackPane?>
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="client.gui.controllers.MainMenuController"
+      alignment="CENTER"
+      spacing="40"
+      style="-fx-background-color: #121212; -fx-padding: 50;">
+
+    <Label text="МАГИЧЕСКАЯ ДУЭЛЬ"
+           style="-fx-font-size: 54px; -fx-text-fill: white; -fx-font-weight: bold;"/>
+
+    <Label text="ВЫБЕРИ СВОЕГО МАГА:"
+           style="-fx-font-size: 24px; -fx-text-fill: #BB86FC;"/>
+
+    <HBox spacing="30" alignment="CENTER">
+        <Button fx:id="pyromancerCard" onAction="#onMageSelected" styleClass="mage-card">
+            <graphic>
+                <VBox alignment="CENTER" spacing="15">
+                    <ImageView fitHeight="350" fitWidth="280" preserveRatio="true">
+                        <image>
+                            <Image url="@/images/classes/pyromancer.png"/>
+                        </image>
+                    </ImageView>
+                    <Label text="ПИРОМАНТ" style="-fx-font-size: 20px; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                </VBox>
+            </graphic>
+        </Button>
+
+        <Button fx:id="cryomancerCard" onAction="#onMageSelected" styleClass="mage-card">
+            <graphic>
+                <VBox alignment="CENTER" spacing="15">
+                    <ImageView fitHeight="350" fitWidth="280" preserveRatio="true">
+                        <image>
+                            <Image url="@/images/classes/cryomancer.png"/>
+                        </image>
+                    </ImageView>
+                    <Label text="КРИОМАНТ" style="-fx-font-size: 20px; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                </VBox>
+            </graphic>
+        </Button>
+
+        <Button fx:id="geomancerCard" onAction="#onMageSelected" styleClass="mage-card">
+            <graphic>
+                <VBox alignment="CENTER" spacing="15">
+                    <ImageView fitHeight="350" fitWidth="280" preserveRatio="true">
+                        <image>
+                            <Image url="@/images/classes/geomancer.png"/>
+                        </image>
+                    </ImageView>
+                    <Label text="ГЕОМАНТ" style="-fx-font-size: 20px; -fx-text-fill: white; -fx-font-weight: bold;"/>
+                </VBox>
+            </graphic>
+        </Button>
+    </HBox>
+
+    <TextField fx:id="nameField"
+               promptText="Ваше имя"
+               maxWidth="400"
+               style="-fx-font-size: 20px; -fx-padding: 10;"/>
+
+    <Button fx:id="startButton"
+            text="НАЧАТЬ ИГРУ"
+            onAction="#onStartGame"
+            disable="true"
+            styleClass="start-button"/>
+
+</VBox>

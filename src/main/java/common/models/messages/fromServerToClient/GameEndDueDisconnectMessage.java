@@ -7,6 +7,8 @@ public class GameEndDueDisconnectMessage extends GameMessage {
     private String disconnectPlayerName;
 
 
+    public GameEndDueDisconnectMessage() {}
+
     public GameEndDueDisconnectMessage(String remainingPlayerName){
         this.disconnectPlayerName = remainingPlayerName;
     }
