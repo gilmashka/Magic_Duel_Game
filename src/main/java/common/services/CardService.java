@@ -105,4 +105,7 @@ public class CardService {
         return baseCards;
     }
 
+    public static Card getCardById(int cardId) {
+        return fullCardList.get(cardId);
+    }
 }

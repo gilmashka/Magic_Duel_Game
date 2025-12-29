@@ -6,6 +6,13 @@ public class ChoiceCharacterMessage extends GameMessage {
     private String wizardType;
     private String nameOfPlayer;
 
+    public ChoiceCharacterMessage(String wizardType, String nameOfPlayer) {
+        this.wizardType = wizardType;
+        this.nameOfPlayer = nameOfPlayer;
+    }
+
+    public ChoiceCharacterMessage() {}
+
     @Override
     public String getType(){
         return "CHOICE_OF_CHARACTER";

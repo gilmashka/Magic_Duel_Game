@@ -7,6 +7,8 @@ public class GameEndDrawMessage extends GameMessage {
     String yourName;
     String opponentName;
 
+    public GameEndDrawMessage() {}
+
     public GameEndDrawMessage(String yourName, String opponentName){
         this.yourName = yourName;
         this.opponentName = opponentName;

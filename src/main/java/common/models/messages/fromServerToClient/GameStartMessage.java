@@ -2,6 +2,8 @@ package common.models.messages.fromServerToClient;
 
 import common.models.messages.GameMessage;
 
+import java.util.List;
+
 /*
  * Сообщение о начале игры
  */
@@ -11,6 +13,7 @@ public class GameStartMessage extends GameMessage {
     private int opponentHP;
     private String yourWizardType;
     private String opponentWizardType;
+    List<Integer> cards;
 
     public GameStartMessage() {}
 
@@ -21,6 +24,16 @@ public class GameStartMessage extends GameMessage {
         this.opponentHP = opponentHP;
         this.yourWizardType = yourWizardType;
         this.opponentWizardType = opponentWizardType;
+    }
+
+    public GameStartMessage(String opponentName, int yourHP, int opponentHP,
+                            String yourWizardType, String opponentWizardType, List<Integer> cards1) {
+        this.opponentName = opponentName;
+        this.yourHP = yourHP;
+        this.opponentHP = opponentHP;
+        this.yourWizardType = yourWizardType;
+        this.opponentWizardType = opponentWizardType;
+        this.cards = cards1;
     }
 
     @Override
@@ -41,6 +54,9 @@ public class GameStartMessage extends GameMessage {
     public String getYourWizardType() { return yourWizardType; }
     public void setYourWizardType(String yourWizardType) { this.yourWizardType = yourWizardType; }
 
-    public String getOpponentWizardName() { return opponentWizardType; }
-    public void setOpponentWizardName(String opponentWizardName) { this.opponentWizardType = opponentWizardName; }
+    public List<Integer> getCards() {return cards;}
+    public void setCards(List<Integer> cards) {this.cards = cards;}
+
+    public String getOpponentWizardType() { return opponentWizardType; }
+    public void setOpponentWizardType(String opponentWizardName) { this.opponentWizardType = opponentWizardName; }
 }

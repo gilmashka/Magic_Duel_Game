@@ -6,6 +6,8 @@ import common.models.messages.GameMessage;
 public class AddToQueueMessage extends GameMessage {
     private String playerName;
 
+    public AddToQueueMessage() {}
+
     public AddToQueueMessage(String playerName){
         this.playerName = playerName;
     }

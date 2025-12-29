@@ -5,6 +5,8 @@ import common.models.Player;
 import common.models.messages.fromServerToClient.*;
 import common.utils.JsonUtils;
 
+import java.util.List;
+
 /*
 класс-сервис, управляющий отправкой сообщений от сервера на клиент
  */
@@ -34,41 +36,58 @@ public class MessageSender {
             String json2 = JsonUtils.toJson(gameEndMessage2);
             player2.getClientHandler().sendMessage(json2);
         }
-        catch (Exception e){
+        catch (Exception e) {
             System.err.println("не удалось обработать сообщение об окончании игры");
             e.printStackTrace();
         }
     }
 
     //отправка сообщения о начале игры
-    public static void sendGameStart(Player player1, Player player2){
-        try{
-            GameStartMessage gameStartMessage1 = new GameStartMessage(player2.getName(), player1.getWizard().getHp(), player2.getWizard().getHp(), player1.getWizard().getType(), player2.getWizard().getType());
-            String json1 = JsonUtils.toJson(gameStartMessage1);
-            player1.getClientHandler().sendMessage(json1);
+    public static void sendGameStart(Player player1, Player player2) {
+        try {
+            List<Integer> cards1 = player1.getWizard().getDeck().stream()
+                    .map(card -> card.getId()).toList();
+            List<Integer> cards2 = player2.getWizard().getDeck().stream()
+                    .map(card -> card.getId()).toList();
 
-            GameStartMessage gameStartMessage2 = new GameStartMessage(player1.getName(), player2.getWizard().getHp(), player1.getWizard().getHp(), player2.getWizard().getType(), player1.getWizard().getType());
-            String json2 = JsonUtils.toJson(gameStartMessage2);
-            player2.getClientHandler().sendMessage(json2);
-        }
-        catch (Exception e){
-            System.err.println("не удалось обработать сообщение о начале игры");
+            GameStartMessage gsm1 = new GameStartMessage(player2.getName(), 30, 30,
+                    player1.getWizard().getType(), player2.getWizard().getType(), cards1);
+
+            GameStartMessage gsm2 = new GameStartMessage(player1.getName(), 30, 30,
+                    player2.getWizard().getType(), player1.getWizard().getType(), cards2);
+
+            player1.getClientHandler().sendMessage(JsonUtils.toJson(gsm1));
+            player2.getClientHandler().sendMessage(JsonUtils.toJson(gsm2));
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     //отправка сообщения о результатах раунда
-    public static void sendRoundResult(Player player1, Player player2, Card card1, Card card2, int player1getdamage, int player2getdamage){
-        try{
-            RoundResultMessage roundResultMessage1 = new RoundResultMessage(player1.getWizard().getHp(), player2.getWizard().getHp(), card1.getId(), card2.getId(), player1getdamage, player2getdamage);
-            String json1 = JsonUtils.toJson(roundResultMessage1);
-            player1.getClientHandler().sendMessage(json1);
+    // Исправленный метод в MessageSender.java
+    public static void sendRoundResult(Player player1, Player player2, Card card1, Card card2, int player1getdamage, int player2getdamage) {
+        try {
+            RoundResultMessage roundResultMessage1 = new RoundResultMessage(
+                    player1.getWizard().getHp(),
+                    player2.getWizard().getHp(),
+                    card1.getId(),
+                    card2.getId(),
+                    player1getdamage,
+                    player2getdamage
+            );
+            player1.getClientHandler().sendMessage(JsonUtils.toJson(roundResultMessage1));
 
-            RoundResultMessage roundResultMessage2 = new RoundResultMessage(player2.getWizard().getHp(), player1.getWizard().getHp(), card2.getId(), card1.getId(), player2getdamage,player1getdamage);
-            String json2 = JsonUtils.toJson(roundResultMessage2);
-            player2.getClientHandler().sendMessage(json2);
-        }
-        catch (Exception e){
+            RoundResultMessage roundResultMessage2 = new RoundResultMessage(
+                    player2.getWizard().getHp(),
+                    player1.getWizard().getHp(),
+                    card2.getId(),
+                    card1.getId(),
+                    player2getdamage,
+                    player1getdamage
+            );
+            player2.getClientHandler().sendMessage(JsonUtils.toJson(roundResultMessage2));
+
+        } catch (Exception e) {
             System.err.println("не удалось обработать сообщение о результатах раунда");
             e.printStackTrace();
         }

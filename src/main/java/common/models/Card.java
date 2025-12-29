@@ -1,8 +1,14 @@
 package common.models;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /*
 класс-модель объекта "Карта"
 описывает объект "Карта"
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Card {
 
     /*
@@ -16,14 +22,17 @@ public class Card {
     private final int attack_parameter;
     private final int defence_parameter;
 
-    //конструктор
-    public Card(int id, String name, int attack_parameter, int defence_parameter) {
+    @JsonCreator
+    public Card(
+            @JsonProperty("id") int id,
+            @JsonProperty("name") String name,
+            @JsonProperty("attack_parameter") int attack_parameter,
+            @JsonProperty("defence_parameter") int defence_parameter) {
         this.id = id;
         this.name = name;
         this.attack_parameter = attack_parameter;
         this.defence_parameter = defence_parameter;
     }
-
 
     //геттеры
     public int getAttack_parameter() {

@@ -1,0 +1,35 @@
+/* Базовая карточка */
+.mage-card {
+    -fx-background-color: #1e1e1e;
+    -fx-border-color: #333333;
+    -fx-border-width: 2px;
+    -fx-border-radius: 15px;
+    -fx-background-radius: 15px;
+    -fx-padding: 20px;
+    -fx-transition: 0.3s;
+}
+
+.mage-card:hover {
+    -fx-border-color: #555555;
+    -fx-background-color: #252525;
+}
+
+.mage-card.selected {
+    -fx-border-color: #03DAC5 !important;
+    -fx-border-width: 5px !important;
+    -fx-background-color: #2d2d2d !important;
+    -fx-effect: dropshadow(three-pass-box, rgba(3, 218, 197, 0.8), 20, 0, 0, 0);
+}
+
+.mage-card.selected:hover {
+    -fx-border-color: #03DAC5 !important;
+    -fx-effect: dropshadow(three-pass-box, rgba(3, 218, 197, 1), 25, 0, 0, 0);
+}
+
+/* Стили кнопки СТАРТ */
+.start-button {
+    -fx-min-width: 300px;
+    -fx-min-height: 70px;
+    -fx-font-size: 24px;
+    -fx-background-radius: 35px;
+}
