@@ -23,7 +23,7 @@ public class Wizard {
         this.id = id;
         this.type = type;
         this.deck = deck;
-        this.hp = 30;
+        this.hp = 15;
     }
 
     //геттеры

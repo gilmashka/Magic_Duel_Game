@@ -47,7 +47,7 @@ public class CardService {
         addCard(10, "Пронизывающий холод", 5,5);
         //
         addCard(11, "Сталактитная завеса", 2,8);
-        addCard(12, "Литосерный щит", 0,10);
+        addCard(12, "Литосферный щит", 0,10);
     }
 
     private static void addCard(int id, String name, int attack_parameter, int defence_parameter) {
