@@ -50,10 +50,10 @@ public class MessageSender {
             List<Integer> cards2 = player2.getWizard().getDeck().stream()
                     .map(card -> card.getId()).toList();
 
-            GameStartMessage gsm1 = new GameStartMessage(player2.getName(), 30, 30,
+            GameStartMessage gsm1 = new GameStartMessage(player2.getName(), 15, 15,
                     player1.getWizard().getType(), player2.getWizard().getType(), cards1);
 
-            GameStartMessage gsm2 = new GameStartMessage(player1.getName(), 30, 30,
+            GameStartMessage gsm2 = new GameStartMessage(player1.getName(), 15, 15,
                     player2.getWizard().getType(), player1.getWizard().getType(), cards2);
 
             player1.getClientHandler().sendMessage(JsonUtils.toJson(gsm1));

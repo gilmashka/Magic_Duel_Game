@@ -10,11 +10,14 @@ import common.models.messages.fromServerToClient.RoundResultMessage;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+
+import java.io.IOException;
 
 public class ClientApp extends Application {
 
@@ -125,43 +128,29 @@ public class ClientApp extends Application {
                     gameCtrl.onRoundResult(rrm);
                 }
             }
-            else if (message instanceof GameEndMessage) {
-                GameEndMessage gem = (GameEndMessage) message;
-                Platform.runLater(() -> {
-                    showGameOverScreen(gem.getWinnerName(), gem.getReason());
-                });
+            else if (message instanceof GameEndMessage gem) {
+                if (currentController instanceof GameController gameCtrl) {
+                    gameCtrl.onGameOver(gem.getWinnerName(), gem.getReason());
+                } else {
+                    showMainMenu();
+                }
             }
         });
     }
 
-    public void showGameOverScreen(String winnerName, String reason) {
-        Platform.runLater(() -> {
-            Alert alert = new Alert(Alert.AlertType.INFORMATION);
-            alert.setTitle("Конец игры");
-            alert.setHeaderText(null);
+    public void showStartMenu() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/screens/MainMenu.fxml"));
+            Parent root = loader.load();
 
-            String message;
-            if (winnerName.equalsIgnoreCase("Ничья")) {
-                message = "Игра окончена вничью!";
-            } else {
-                message = "Победитель: " + winnerName + "!";
-            }
+            primaryStage.getScene().setRoot(root);
 
-            String subMessage = "\nПричина: " + translateReason(reason);
+            this.currentController = loader.getController();
 
-            alert.setContentText(message + subMessage);
-
-            alert.showAndWait();
-            showMainMenu();
-        });
-    }
-
-    private String translateReason(String reason) {
-        return switch (reason) {
-            case "GAME_OVER_REASON_NO_MORE_CARDS" -> "у игроков закончились карты";
-            case "GAME_OVER_REASON_HEALTH_ZERO" -> "здоровье одного из магов достигло нуля";
-            default -> "завершение сессии";
-        };
+        } catch (IOException e) {
+            System.err.println("Ошибка при загрузке начального меню");
+            e.printStackTrace();
+        }
     }
 
     // Обработка отключения

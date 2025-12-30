@@ -8,14 +8,16 @@ import common.models.messages.fromServerToClient.RoundResultMessage;
 import common.services.CardService;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.scene.input.*;
 import javafx.scene.Node;
@@ -37,11 +39,28 @@ public class GameController {
     @FXML private StackPane opponentSlot;
     @FXML private Label playerDamageText;
     @FXML private Label opponentDamageText;
+    @FXML private StackPane gameOverOverlay;
+    @FXML private Label resultTitleLabel;
+    @FXML private Label resultDetailsLabel;
 
     private ClientApp clientApp;
     private Client client;
-    private final double MAX_HP = 30.0;
+    private final double MAX_HP = 15.0;
     private Stage primaryStage;
+    private static final java.util.Map<String, String> CARD_IMAGES = java.util.Map.ofEntries(
+            java.util.Map.entry("Точечный импульс", "Point_impulse"),
+            java.util.Map.entry("Кинетическая волна", "Kinetic_wave"),
+            java.util.Map.entry("Искажающий луч", "Distorting_beam"),
+            java.util.Map.entry("Резонаторная сфера", "Resonance_sphere"),
+            java.util.Map.entry("Призрачный барьер", "Ghost_barrier"),
+            java.util.Map.entry("Изолирующая оболочка", "Insulating_shell"),
+            java.util.Map.entry("Инфернальный луч", "Infernal_ray"),
+            java.util.Map.entry("Магматический щит", "Magma_shield"),
+            java.util.Map.entry("Абсолютный нуль", "Absolute_zero"),
+            java.util.Map.entry("Пронизывающий холод", "Biting_cold"),
+            java.util.Map.entry("Сталактитная завеса", "Stalactite_curtain"),
+            java.util.Map.entry("Литосферный щит", "Lithospheric_shield")
+    );
 
     public void setClientApp(ClientApp clientApp, Client client) {
         this.clientApp = clientApp;
@@ -73,41 +92,67 @@ public class GameController {
       Создание визуального представления карты
      */
     private Node createCardView(int cardId) {
-        common.models.Card card = common.services.CardService.getCardById(cardId);
+        Card card = CardService.getCardById(cardId);
 
-        VBox cardNode = new VBox(15);
-        cardNode.setAlignment(javafx.geometry.Pos.CENTER);
-        cardNode.setPrefSize(140, 200);
+        StackPane cardRoot = new StackPane();
+        cardRoot.setPrefSize(180, 260);
+        cardRoot.setMinSize(180, 260);
+        cardRoot.setMaxSize(180, 260);
+        cardRoot.setUserData(cardId);
 
-        cardNode.setStyle(
-                "-fx-background-color: #1e1e1e; " +
-                        "-fx-border-color: #03DAC5; " +
-                        "-fx-border-width: 2; " +
-                        "-fx-border-radius: 10; " +
-                        "-fx-background-radius: 10;"
-        );
+        String fileName = CARD_IMAGES.getOrDefault(card.getName(), String.valueOf(cardId)) + ".png";
+        String imagePath = "/images/cards/" + fileName;
 
-        Label title = new Label(card.getName().toUpperCase());
-        title.setStyle("-fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 13px;");
+        ImageView imageView = new ImageView();
+        imageView.setFitWidth(180);
+        imageView.setFitHeight(260);
 
-        VBox statsBox = new VBox(5);
-        statsBox.setAlignment(javafx.geometry.Pos.CENTER);
+        var resource = getClass().getResource(imagePath);
+        if (resource != null) {
+            imageView.setImage(new javafx.scene.image.Image(resource.toExternalForm()));
+        }
 
-        Label atkLabel = new Label("АТАКА: " + card.getAttack_parameter());
-        atkLabel.setStyle("-fx-text-fill: #ff6b6b; -fx-font-weight: bold;");
+        // Блок информации
+        VBox infoBox = new VBox(2);
+        infoBox.setAlignment(Pos.CENTER);
+        infoBox.setMouseTransparent(true);
+        infoBox.setMaxHeight(65);
+        infoBox.setPrefHeight(65);
 
-        Label defLabel = new Label("ЗАЩИТА: " + card.getDefence_parameter());
-        defLabel.setStyle("-fx-text-fill: #4ecdc4; -fx-font-weight: bold;");
+        infoBox.setMinWidth(180);
+        infoBox.setMaxWidth(180);
+
+        StackPane.setAlignment(infoBox, Pos.BOTTOM_CENTER);
+        StackPane.setMargin(infoBox, new Insets(0, 0, 15, 0));
+
+        Label nameLabel = new Label(card.getName().toUpperCase());
+        nameLabel.setPrefWidth(160);
+        nameLabel.setWrapText(true);
+        nameLabel.setAlignment(Pos.CENTER);
+        nameLabel.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
+        nameLabel.setStyle("-fx-text-fill: #2b1b0e; -fx-font-size: 10px; -fx-font-weight: bold; -fx-alignment: center;");
+
+        HBox statsBox = new HBox(12);
+        statsBox.setAlignment(Pos.CENTER);
+
+        Label atkLabel = new Label("Урон: " + card.getAttack_parameter());
+        atkLabel.setStyle("-fx-text-fill: #0d47a1; -fx-font-size: 10px; -fx-font-weight: bold;");
+
+        Label defLabel = new Label("Защита: " + card.getDefence_parameter());
+        defLabel.setStyle("-fx-text-fill: #b00020; -fx-font-size: 10px; -fx-font-weight: bold;");
 
         statsBox.getChildren().addAll(atkLabel, defLabel);
+        infoBox.getChildren().addAll(nameLabel, statsBox);
 
-        cardNode.getChildren().addAll(title, statsBox);
+        cardRoot.getChildren().addAll(imageView, infoBox);
 
-        cardNode.setUserData(cardId);
-        makeDraggable(cardNode, cardId);
-
-        return cardNode;
+        makeDraggable(cardRoot, cardId);
+        return cardRoot;
     }
+
+
+
+
 
     private void makeDraggable(Node cardNode, int cardId) {
         cardNode.setOnDragDetected(event -> {
@@ -162,8 +207,12 @@ public class GameController {
 
     private void renderCardInSlot(StackPane slot, int cardId) {
         slot.getChildren().clear();
-
         Node cardUI = createCardView(cardId);
+
+        StackPane.setAlignment(cardUI, Pos.CENTER);
+
+        slot.setPrefHeight(300);
+        slot.setMinHeight(300);
 
         slot.getChildren().add(cardUI);
 
@@ -216,18 +265,75 @@ public class GameController {
         });
     }
 
-    public void onGameOver(String winner, String reason) {
-        cardsContainer.setDisable(true);
-
-        clientApp.showGameOverScreen(winner, reason);
-    }
-
     private void updateHpDisplays(int p1Hp, int p2Hp) {
         playerHpBar.setProgress(p1Hp / MAX_HP);
         opponentHpBar.setProgress(p2Hp / MAX_HP);
 
-        if (playerHpText != null) playerHpText.setText(p1Hp + " / 30");
-        if (opponentHpText != null) opponentHpText.setText(p2Hp + " / 30");
+        if (playerHpText != null) playerHpText.setText(p1Hp + " / 15");
+        if (opponentHpText != null) opponentHpText.setText(p2Hp + " / 15");
+    }
+
+    @FXML
+    private void handleMinimize(ActionEvent event) {
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        stage.setIconified(true);
+    }
+
+    @FXML
+    private void handleWindowSize(ActionEvent event) {
+        Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        if (stage.isFullScreen()) {
+            stage.setFullScreen(false);
+        } else {
+            stage.setFullScreen(true);
+        }
+    }
+
+    @FXML
+    private void handleClose(ActionEvent event) {
+        System.exit(0);
+    }
+
+    public void onGameOver(String winner, String reason) {
+        Platform.runLater(() -> {
+            gameOverOverlay.setManaged(true);
+            gameOverOverlay.setTranslateX(0);
+            gameOverOverlay.setTranslateY(0);
+
+            cardsContainer.setDisable(true);
+
+            String myName = playerNameLabel.getText();
+            boolean isWin = winner.equals(myName);
+
+            if (isWin) {
+                resultTitleLabel.setText("ПОБЕДА!");
+                resultTitleLabel.setStyle("-fx-text-fill: #03DAC5; -fx-font-size: 48px; -fx-font-weight: bold;");
+            } else {
+                resultTitleLabel.setText("ПОРАЖЕНИЕ");
+                resultTitleLabel.setStyle("-fx-text-fill: #cf6679; -fx-font-size: 48px; -fx-font-weight: bold;");
+            }
+
+            String details = reason.equals("GAME_OVER_REASON_DEATH")
+                    ? "Маг " + winner + " оказался сильнее в этой дуэли!"
+                    : "У одного из магов закончились заклинания...";
+            resultDetailsLabel.setText(details);
+
+            gameOverOverlay.setVisible(true);
+            FadeTransition ft = new FadeTransition(Duration.millis(500), gameOverOverlay);
+            ft.setFromValue(0.0);
+            ft.setToValue(1.0);
+            ft.play();
+        });
+    }
+
+    @FXML
+    private void handleReturnToMenu() {
+        clientApp.showStartMenu();
+    }
+
+    @FXML
+    private void handleExitGame() {
+        System.exit(0);
     }
 
 }

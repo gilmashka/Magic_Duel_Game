@@ -25,7 +25,7 @@
         <Button fx:id="pyromancerCard" onAction="#onMageSelected" styleClass="mage-card">
             <graphic>
                 <VBox alignment="CENTER" spacing="15">
-                    <ImageView fitHeight="350" fitWidth="280" preserveRatio="true">
+                    <ImageView fitHeight="350" fitWidth="250">
                         <image>
                             <Image url="@/images/classes/pyromancer.png"/>
                         </image>
@@ -38,7 +38,7 @@
         <Button fx:id="cryomancerCard" onAction="#onMageSelected" styleClass="mage-card">
             <graphic>
                 <VBox alignment="CENTER" spacing="15">
-                    <ImageView fitHeight="350" fitWidth="280" preserveRatio="true">
+                    <ImageView fitHeight="350" fitWidth="250">
                         <image>
                             <Image url="@/images/classes/cryomancer.png"/>
                         </image>
@@ -51,7 +51,7 @@
         <Button fx:id="geomancerCard" onAction="#onMageSelected" styleClass="mage-card">
             <graphic>
                 <VBox alignment="CENTER" spacing="15">
-                    <ImageView fitHeight="350" fitWidth="280" preserveRatio="true">
+                    <ImageView fitHeight="350" fitWidth="250">
                         <image>
                             <Image url="@/images/classes/geomancer.png"/>
                         </image>
