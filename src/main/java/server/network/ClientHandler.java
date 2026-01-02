@@ -47,9 +47,12 @@ public class ClientHandler implements Runnable{
                 GameMessage message = JsonUtils.parseMessage(jsonFromClient);
                 gameManager.handleMessage(this, message);
             }
-        }catch (Exception e){ //ошибка на стороне клиента
-            System.out.println("Ошибка у клиента " + clientId +  " типа: " + e.getMessage());
-        }finally {
+        }catch (IOException e){ //выход клиента
+            System.out.println("Клиент " + clientId +  " отключился");
+            gameManager.disconnectProcessing(this);
+        }catch(Exception e){
+            System.out.println("Непредвиденная ошибка у клиента " + clientId + " типа: " + e.getMessage());
+        } finally {
             close();
         }
     }
