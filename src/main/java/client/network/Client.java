@@ -12,9 +12,11 @@ public class Client {
     private Socket socket;
     private BufferedWriter writer;
     private BufferedReader reader;
+    private String username; // Новое поле
 
-    public Client(ClientApp clientApp, String host, int port) throws IOException {
+    public Client(ClientApp clientApp, String host, int port, String username) throws IOException {
         this.clientApp = clientApp;
+        this.username = username; // Сохраняем имя при подключении
         this.socket = new Socket(host, port);
         this.writer = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
         this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -30,11 +32,18 @@ public class Client {
                     clientApp.handleMessage(message);
                 }
             } catch (Exception e) {
-                clientApp.onConnectionClosed();
+                // Если ошибка произошла не из-за намеренного закрытия сокета
+                if (socket != null && !socket.isClosed()) {
+                    clientApp.onConnectionClosed();
+                }
             } finally {
                 close();
             }
         }).start();
+    }
+
+    public String getUsername() {
+        return username;
     }
 
     public void sendMessage(GameMessage message) {

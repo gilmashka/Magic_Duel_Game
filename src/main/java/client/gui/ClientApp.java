@@ -3,28 +3,24 @@ package client.gui;
 import client.gui.controllers.*;
 import client.network.Client;
 import common.models.messages.GameMessage;
-import common.models.messages.fromServerToClient.AddToQueueMessage;
-import common.models.messages.fromServerToClient.GameEndMessage;
-import common.models.messages.fromServerToClient.GameStartMessage;
-import common.models.messages.fromServerToClient.RoundResultMessage;
+import common.models.messages.fromServerToClient.*;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
-import java.io.IOException;
-
 public class ClientApp extends Application {
 
-    private Object currentScreen;
     private Stage primaryStage;
     private Client client;
     private Object currentController;
+
+    // volatile гарантирует, что сетевой поток увидит изменение флага мгновенно
+    private volatile boolean isIntentionalLogout = false;
 
     @Override
     public void start(Stage stage) throws Exception {
@@ -40,40 +36,55 @@ public class ClientApp extends Application {
     // =============== ЭКРАНЫ ===============
 
     public void showMainMenu() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/screens/MainMenu.fxml"));
-            Pane root = loader.load();
+        // ВАЖНО: Устанавливаем ДО Platform.runLater, чтобы сетевой поток
+        // сразу увидел, что закрытие сокета — это наша инициатива.
+        isIntentionalLogout = true;
 
-            MainMenuController controller = loader.getController();
-            controller.setClientApp(this, primaryStage);
-            currentController = controller;
+        Platform.runLater(() -> {
+            try {
+                if (this.client != null) {
+                    this.client.close();
+                    this.client = null;
+                }
 
-            if (primaryStage.getScene() == null) {
-                Scene scene = new Scene(root);
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("/screens/MainMenu.fxml"));
+                Pane root = loader.load();
 
-                scene.setOnKeyPressed(event -> {
-                    if (event.getCode() == javafx.scene.input.KeyCode.F11) {
-                        primaryStage.setFullScreen(!primaryStage.isFullScreen());
-                    }
-                });
+                MainMenuController controller = loader.getController();
+                controller.setClientApp(this, primaryStage);
+                currentController = controller;
 
-                scene.getStylesheets().add(getClass().getResource("/styles/MainMenu.css").toExternalForm());
-                primaryStage.setScene(scene);
-            } else {
-                primaryStage.getScene().setRoot(root);
-                primaryStage.getScene().getStylesheets().clear();
-                primaryStage.getScene().getStylesheets().add(getClass().getResource("/styles/MainMenu.css").toExternalForm());
+                if (primaryStage.getScene() == null) {
+                    Scene scene = new Scene(root);
+                    scene.setOnKeyPressed(event -> {
+                        if (event.getCode() == javafx.scene.input.KeyCode.F11) {
+                            primaryStage.setFullScreen(!primaryStage.isFullScreen());
+                        }
+                    });
+                    primaryStage.setScene(scene);
+                } else {
+                    primaryStage.getScene().setRoot(root);
+                    primaryStage.getScene().getStylesheets().clear();
+                }
+
+                String css = getClass().getResource("/styles/MainMenu.css").toExternalForm();
+                if (!primaryStage.getScene().getStylesheets().contains(css)) {
+                    primaryStage.getScene().getStylesheets().add(css);
+                }
+
+                primaryStage.setFullScreen(true);
+                primaryStage.show();
+
+            } catch (Exception e) {
+                System.err.println("Критическая ошибка при загрузке MainMenu:");
+                e.printStackTrace();
             }
-
-            primaryStage.setFullScreen(true);
-            primaryStage.show();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        });
     }
 
     public void showWaiting(Client client) {
         this.client = client;
+        this.isIntentionalLogout = false;
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/screens/Waiting.fxml"));
             Pane root = loader.load();
@@ -91,16 +102,16 @@ public class ClientApp extends Application {
         }
     }
 
-    public void showGame(Client client, common.models.messages.fromServerToClient.GameStartMessage gsm) {
+    public void showGame(Client client, GameStartMessage gsm) {
         this.client = client;
+        this.isIntentionalLogout = false;
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/screens/Game.fxml"));
             Pane root = loader.load();
 
             GameController controller = loader.getController();
             controller.setClientApp(this, client);
-
-            controller.initGame(gsm.getOpponentName(), gsm.getCards());
+            controller.initGame(gsm.getOpponentName(), client.getUsername(), gsm.getCards());
 
             currentController = controller;
 
@@ -116,6 +127,17 @@ public class ClientApp extends Application {
     // =============== СЕТЕВЫЕ МЕТОДЫ ===============
 
     public void handleMessage(GameMessage message) {
+        // 1. Техническая пометка завершения игры (БЕЗ Platform.runLater)
+        if (message instanceof GameEndMessage ||
+                message instanceof GameEndDueDisconnectMessage ||
+                message instanceof GameEndDrawMessage) {
+
+            if (currentController instanceof GameController gameCtrl) {
+                gameCtrl.setGameOver(true);
+            }
+        }
+
+        // 2. Визуальное обновление интерфейса
         Platform.runLater(() -> {
             if (message instanceof AddToQueueMessage) {
                 showWaiting(client);
@@ -135,34 +157,55 @@ public class ClientApp extends Application {
                     showMainMenu();
                 }
             }
+            else if (message instanceof GameEndDueDisconnectMessage) {
+                if (currentController instanceof GameController gameCtrl) {
+                    gameCtrl.onGameOver(client.getUsername(), "OPPONENT_DISCONNECTED");
+                }
+            }
+            else if (message instanceof GameEndDrawMessage) {
+                if (currentController instanceof GameController gameCtrl) {
+                    gameCtrl.onGameOver(null, "DRAW");
+                }
+            }
         });
     }
 
-    public void showStartMenu() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/screens/MainMenu.fxml"));
-            Parent root = loader.load();
-
-            primaryStage.getScene().setRoot(root);
-
-            this.currentController = loader.getController();
-
-        } catch (IOException e) {
-            System.err.println("Ошибка при загрузке начального меню");
-            e.printStackTrace();
-        }
-    }
-
-    // Обработка отключения
     public void onConnectionClosed() {
-        Platform.runLater(() -> {
-            new Alert(Alert.AlertType.WARNING, "Соединение потеряно").showAndWait();
-            showMainMenu();
-        });
+        // Если мы сами закрыли сокет ИЛИ клиент уже обнулен — уходим тихо
+        if (isIntentionalLogout || client == null) {
+            System.out.println("DEBUG: Соединение закрыто штатно.");
+            isIntentionalLogout = false; // сброс для следующей сессии
+            return;
+        }
+
+        new Thread(() -> {
+            try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
+
+            Platform.runLater(() -> {
+                // Двойная проверка: не вышли ли мы в меню за это время?
+                if (isIntentionalLogout) return;
+
+                if (currentController instanceof GameController gc) {
+                    if (gc.isGameOver()) {
+                        return;
+                    }
+                }
+
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle("Внимание");
+                alert.setHeaderText(null);
+                alert.setContentText("Соединение потеряно");
+                alert.showAndWait();
+
+                showMainMenu();
+            });
+        }).start();
     }
 
-    // Обработка ошибки
     public void onConnectionError(String error) {
+        // Если ошибка произошла во время намеренного выхода — игнорируем
+        if (isIntentionalLogout) return;
+
         Platform.runLater(() -> {
             new Alert(Alert.AlertType.ERROR, "Ошибка: " + error).showAndWait();
         });
