@@ -51,7 +51,7 @@ public class MainMenuController {
         if (playerName.isEmpty() || selectedMageType == null) return;
 
         try {
-            Client client = new Client(clientApp, "localhost", 1234);
+            Client client = new Client(clientApp, "localhost", 1234, playerName);
 
             client.sendMessage(new ChoiceCharacterMessage(selectedMageType, playerName));
 

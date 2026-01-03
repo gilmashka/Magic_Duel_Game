@@ -66,43 +66,42 @@ public class GameManager {
     }
 
     //метод, определяющий поведение при отключении клиента
-    public void disconnectProcessing(ClientHandler clientHandler){
+    public void disconnectProcessing(ClientHandler clientHandler) {
         Player player = currentPlayerList.get(clientHandler);
-        if (player == null){
-            return;
-        }
-        if(waitingPlayers.contains(player)){ // Игрок ещё не в игре - просто удаляем из очереди
+        if (player == null) return;
+
+        currentPlayerList.remove(clientHandler);
+
+        if (waitingPlayers.contains(player)) {
             waitingPlayers.remove(player);
-        } else if (currentGameList.containsKey(player)) { // Игрок в игре - его соперник побеждает по техническим причинам
+        }
+        else if (currentGameList.containsKey(player)) {
             GameSession gameSession = currentGameList.get(player);
-            Player player1 = gameSession.getPlayer1();
-            Player player2 = gameSession.getPlayer2();
-            if(!player1.getClientHandler().getClientId().equals(player.getClientHandler().getClientId())){//отключившийся игрок - player2
-                MessageSender.sendOpponentDisconnect(player1, player2);
-                endGameSession(gameSession);
+            Player p1 = gameSession.getPlayer1();
+            Player p2 = gameSession.getPlayer2();
+
+            Player remainingPlayer = p1.getClientHandler().getClientId().equals(clientHandler.getClientId()) ? p2 : p1;
+
+            if (remainingPlayer != null) {
+                MessageSender.sendOpponentDisconnect(remainingPlayer, player);
             }
-            else if(!player2.getClientHandler().getClientId().equals(player.getClientHandler().getClientId())){//отключившийся игрок - player1
-                MessageSender.sendOpponentDisconnect(player2, player1);
-                endGameSession(gameSession);
-            }
+
+            currentGameList.remove(player);
         }
     }
 
     //метод удаления игровой сесии, если игра завершена или кто-то отключился
     public void endGameSession(GameSession gameSession){
-        //удалить текущую сессию из списка идущих матей + удаляем игроков из списка текущих игроков, которые либо играют, либо ожидают
         Player player1 = gameSession.getPlayer1();
         Player player2 = gameSession.getPlayer2();
+
         if(player1 != null){
             currentGameList.remove(player1);
-            currentPlayerList.remove(player1.getClientHandler());
         }
         if(player2 != null){
             currentGameList.remove(player2);
-            currentPlayerList.remove(player2.getClientHandler());
         }
-        System.out.println("сессия " + gameSession.getSessionId() + " завершена");//***логирование***
-
+        System.out.println("сессия " + gameSession.getSessionId() + " завершена");
     }
 
 }
