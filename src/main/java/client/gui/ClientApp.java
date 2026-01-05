@@ -19,7 +19,6 @@ public class ClientApp extends Application {
     private Client client;
     private Object currentController;
 
-    // volatile гарантирует, что сетевой поток увидит изменение флага мгновенно
     private volatile boolean isIntentionalLogout = false;
 
     @Override
@@ -29,15 +28,12 @@ public class ClientApp extends Application {
 
         stage.setFullScreen(true);
         stage.setFullScreenExitHint("Нажмите ESC для выхода из полноэкранного режима");
-        stage.setFullScreenExitKeyCombination(KeyCombination.NO_MATCH);
         showMainMenu();
     }
 
     // =============== ЭКРАНЫ ===============
 
     public void showMainMenu() {
-        // ВАЖНО: Устанавливаем ДО Platform.runLater, чтобы сетевой поток
-        // сразу увидел, что закрытие сокета — это наша инициатива.
         isIntentionalLogout = true;
 
         Platform.runLater(() -> {
@@ -127,42 +123,36 @@ public class ClientApp extends Application {
     // =============== СЕТЕВЫЕ МЕТОДЫ ===============
 
     public void handleMessage(GameMessage message) {
-        // 1. Техническая пометка завершения игры (БЕЗ Platform.runLater)
         if (message instanceof GameEndMessage ||
                 message instanceof GameEndDueDisconnectMessage ||
                 message instanceof GameEndDrawMessage) {
 
             if (currentController instanceof GameController gameCtrl) {
                 gameCtrl.setGameOver(true);
+                System.out.println("DEBUG: Игра помечена как завершенная (GameOver = true)");
             }
         }
 
-        // 2. Визуальное обновление интерфейса
         Platform.runLater(() -> {
             if (message instanceof AddToQueueMessage) {
                 showWaiting(client);
-            }
-            else if (message instanceof GameStartMessage gsm) {
+            } else if (message instanceof GameStartMessage gsm) {
                 showGame(client, gsm);
-            }
-            else if (message instanceof RoundResultMessage rrm) {
+            } else if (message instanceof RoundResultMessage rrm) {
                 if (currentController instanceof GameController gameCtrl) {
                     gameCtrl.onRoundResult(rrm);
                 }
-            }
-            else if (message instanceof GameEndMessage gem) {
+            } else if (message instanceof GameEndMessage gem) {
                 if (currentController instanceof GameController gameCtrl) {
                     gameCtrl.onGameOver(gem.getWinnerName(), gem.getReason());
                 } else {
                     showMainMenu();
                 }
-            }
-            else if (message instanceof GameEndDueDisconnectMessage) {
+            } else if (message instanceof GameEndDueDisconnectMessage) {
                 if (currentController instanceof GameController gameCtrl) {
                     gameCtrl.onGameOver(client.getUsername(), "OPPONENT_DISCONNECTED");
                 }
-            }
-            else if (message instanceof GameEndDrawMessage) {
+            } else if (message instanceof GameEndDrawMessage) {
                 if (currentController instanceof GameController gameCtrl) {
                     gameCtrl.onGameOver(null, "DRAW");
                 }
@@ -171,7 +161,6 @@ public class ClientApp extends Application {
     }
 
     public void onConnectionClosed() {
-        // Если мы сами закрыли сокет ИЛИ клиент уже обнулен — уходим тихо
         if (isIntentionalLogout || client == null) {
             System.out.println("DEBUG: Соединение закрыто штатно.");
             isIntentionalLogout = false; // сброс для следующей сессии
@@ -182,7 +171,6 @@ public class ClientApp extends Application {
             try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
 
             Platform.runLater(() -> {
-                // Двойная проверка: не вышли ли мы в меню за это время?
                 if (isIntentionalLogout) return;
 
                 if (currentController instanceof GameController gc) {
@@ -203,7 +191,6 @@ public class ClientApp extends Application {
     }
 
     public void onConnectionError(String error) {
-        // Если ошибка произошла во время намеренного выхода — игнорируем
         if (isIntentionalLogout) return;
 
         Platform.runLater(() -> {
