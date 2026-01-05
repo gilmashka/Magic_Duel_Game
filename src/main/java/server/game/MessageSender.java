@@ -111,6 +111,7 @@ public class MessageSender {
             GameEndDueDisconnectMessage gameEndDueDisconnectMessage = new GameEndDueDisconnectMessage(disconnectPlayer.getName());
             String json = JsonUtils.toJson(gameEndDueDisconnectMessage);
             remainingPlayer.getClientHandler().sendMessage(json);
+            System.out.println("отключение зафиксировано!!!");//***логирование***
         }catch (Exception e){
             System.err.println("не удалось обработать сообщение об отключении противника");
             e.printStackTrace();
