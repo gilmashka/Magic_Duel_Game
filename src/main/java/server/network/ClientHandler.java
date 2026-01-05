@@ -33,24 +33,33 @@ public class ClientHandler implements Runnable {
     @Override
     public void run() {
         try {
-            while (!socket.isClosed()) {
+            while (!Thread.currentThread().isInterrupted() && !socket.isClosed()) {
                 String jsonFromClient = bufferedReader.readLine();
 
                 if (jsonFromClient == null) {
-                    break; // Просто выходим из цикла, finally сделает остальное
+                    System.out.println("Клиент " + clientId + " отключился (получен null)");
+                    gameManager.disconnectProcessing(this);
+                    break;
                 }
 
-                System.out.println(jsonFromClient);
-                GameMessage message = JsonUtils.parseMessage(jsonFromClient);
-                gameManager.handleMessage(this, message);
+                System.out.println("Получено от " + clientId + ": " + jsonFromClient);
+
+                try {
+                    GameMessage message = JsonUtils.parseMessage(jsonFromClient);
+                    gameManager.handleMessage(this, message);
+                } catch (Exception parseEx) {
+                    System.err.println("Ошибка парсинга сообщения от " + clientId + ": " + parseEx.getMessage());
+                }
             }
+        } catch (java.net.SocketException e) {
+            System.out.println("Соединение с клиентом " + clientId + " потеряно (SocketException)");
+            gameManager.disconnectProcessing(this);
         } catch (Exception e) {
-            if (!socket.isClosed()) {
-                System.out.println("Ошибка у клиента " + clientId + " типа: " + e.getMessage());
-            }
+            System.out.println("Критическая ошибка в потоке клиента " + clientId + ": " + e.getMessage());
+            e.printStackTrace();
+            gameManager.disconnectProcessing(this);
         } finally {
             System.out.println("Завершение обработки для " + clientId);
-            gameManager.disconnectProcessing(this);
             close();
         }
     }
